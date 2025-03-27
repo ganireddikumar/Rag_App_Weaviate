@@ -13,6 +13,153 @@ A Retrieval Augmented Generation (RAG) application that allows users to upload d
 - Docker containerization for easy deployment
 - Nginx reverse proxy for frontend serving
 
+## Technical Architecture Overview
+
+The application follows a modern microservices architecture with the following key components:
+
+### Backend Services
+- **API Server**: Flask-based REST API handling document processing and Q&A
+- **Vector Database**: Weaviate for semantic search and vector storage
+- **Relational Database**: MySQL for storing document metadata and conversation history
+- **LLM Service**: Integration with Together.ai for embeddings and text generation
+
+### Frontend Services
+- **Web Application**: React-based SPA with Material-UI
+- **Static File Server**: Nginx for serving frontend assets
+- **API Gateway**: Nginx reverse proxy for API routing
+
+### Data Flow
+1. Document upload → API Server → Document Processor → Vector DB + MySQL
+2. User Query → API Server → Vector Search → LLM → Response → MySQL
+3. Frontend → API Gateway → Backend Services → Frontend
+
+## Flow Chart
+
+```mermaid
+graph TD
+    subgraph Frontend
+        UI[User Interface]
+        Upload[Document Upload]
+        Query[Question Input]
+    end
+
+    subgraph Backend
+        API[Flask API]
+        Processor[Document Processor]
+        Splitter[Text Splitter]
+        VectorDB[(Weaviate)]
+        RDB[(MySQL)]
+        LLM[Together.ai LLM]
+    end
+
+    subgraph Data Flow
+        Upload --> API
+        API --> Processor
+        Processor --> Splitter
+        Splitter --> VectorDB
+        Splitter --> RDB
+        Query --> API
+        API --> VectorDB
+        VectorDB --> LLM
+        LLM --> RDB
+        RDB --> UI
+    end
+
+    style Frontend fill:#f9f,stroke:#333,stroke-width:2px
+    style Backend fill:#bbf,stroke:#333,stroke-width:2px
+    style Data Flow fill:#bfb,stroke:#333,stroke-width:2px
+```
+
+## Vector Database Selection
+
+Weaviate was chosen over Pinecone for the following reasons:
+
+### Weaviate Advantages
+- **Cloud-Native Architecture**: Built for modern cloud environments
+- **Managed Service**: Reduces operational overhead
+- **Built-in Text2Vec**: Native support for text embeddings
+- **LangChain Integration**: Seamless integration with LangChain framework
+- **Free Tier**: Available for development and testing
+- **Community Support**: Active community and regular updates
+- **Search Capabilities**: Advanced near_vector search with metadata filtering
+- **Scalability**: Excellent performance at scale
+
+### Why Not Pinecone?
+- **Cost**: Higher pricing for production workloads
+- **Limited Free Tier**: More restricted free tier compared to Weaviate
+- **Complex Setup**: More complex initial setup and configuration
+- **Limited Metadata**: Less flexible metadata handling
+- **API Complexity**: More complex API for basic operations
+
+## Setup Instructions
+
+### Prerequisites
+- Docker and Docker Compose
+- Git
+- Python 3.8+ (for local development)
+- Node.js 16+ (for local development)
+
+### Environment Setup
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/rag-app.git
+   cd rag-app
+   ```
+
+2. Create environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Configure environment variables in `.env`:
+   ```
+   WEAVIATE_URL=your_weaviate_url
+   WEAVIATE_API_KEY=your_weaviate_key
+   TOGETHER_API_KEY=your_together_key
+   MYSQL_HOST=mysql
+   MYSQL_USER=your_mysql_user
+   MYSQL_PASSWORD=your_mysql_password
+   MYSQL_DB=ragdb
+   ```
+
+### Docker Deployment
+1. Build and start containers:
+   ```bash
+   docker-compose up --build
+   ```
+
+2. Access the application:
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:5000
+
+### Local Development
+1. Create Python virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+2. Install backend dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Install frontend dependencies:
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+4. Start development servers:
+   ```bash
+   # Terminal 1 - Backend
+   python app.py
+
+   # Terminal 2 - Frontend
+   cd frontend
+   npm start
+   ```
+
 ## Technical Architecture
 
 ### Backend (Python/Flask)
@@ -57,46 +204,6 @@ A Retrieval Augmented Generation (RAG) application that allows users to upload d
    - Returns top 3 most relevant chunks
    - Maintains document flow through chunk indexing
 
-## Setup Instructions
-
-### Using Docker (Recommended)
-1. Clone the repository
-2. Create `.env` file with required credentials:
-   ```
-   WEAVIATE_URL=your_weaviate_url
-   WEAVIATE_API_KEY=your_weaviate_key
-   TOGETHER_API_KEY=your_together_key
-   MYSQL_HOST=mysql
-   MYSQL_USER=your_mysql_user
-   MYSQL_PASSWORD=your_mysql_password
-   MYSQL_DB=ragdb
-   ```
-3. Run with Docker Compose:
-   ```bash
-   docker-compose up --build
-   ```
-4. Access the application:
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:5000
-
-### Manual Setup
-1. Clone the repository
-2. Create virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Set up MySQL database using `init-db.sql`
-5. Configure environment variables in `.env`
-6. Run the application:
-   ```bash
-   python app.py
-   ```
-
 ## API Endpoints
 
 - `POST /api/upload`: Upload and process documents
@@ -117,18 +224,6 @@ Required environment variables:
 - `MYSQL_PASSWORD`: MySQL password
 - `MYSQL_DB`: MySQL database name
 - `FLASK_SECRET_KEY`: Flask session secret key
-
-## Vector Database Selection
-
-Weaviate was chosen as the vector database for the following reasons:
-- Cloud-native architecture with managed service
-- Excellent scalability and performance
-- Built-in support for text2vec-contextionary
-- Simple integration with LangChain
-- Free tier available for development
-- Strong community support
-- Efficient near_vector search capabilities
-- Support for metadata filtering
 
 ## Dependencies
 
