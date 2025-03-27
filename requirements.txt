@@ -1,0 +1,17 @@
+flask
+flask-cors
+python-dotenv
+weaviate-client
+langchain
+langchain_together
+langchain-together
+langchain-community
+langchain-core
+langchain-text-splitters
+mysql-connector-python
+python-multipart
+together
+pypdf
+python-docx
+tiktoken
+numpy
