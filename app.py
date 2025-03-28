@@ -209,8 +209,8 @@ def chat():
             collection = weaviate_client.collections.get("DocumentChunks")
             response = collection.query.near_vector(
                 near_vector=question_embedding,
-                distance=0.7,  # Stricter similarity threshold
-                limit=3,      # Fewer but more relevant chunks
+                distance=0.85,  # More lenient similarity threshold (changed from 0.7)
+                limit=5,      # Increased number of chunks (changed from 3)
                 filters=Filter.by_property("document_id").equal(str(data['document_id'])),
                 return_properties=["chunk", "chunk_index"]
             )
@@ -226,17 +226,18 @@ def chat():
             return jsonify({"answer": "I don't have enough information to answer that question."})
 
         # Generate response using Together.ai
-        prompt = f"""You are a helpful AI assistant. Use the provided context to answer the question. If the context doesn't contain enough information to answer the question accurately, say "I don't have enough information to answer that question."
-
+        prompt = f"""You are a helpful AI assistant analyzing a document. Use the provided context to answer the question thoroughly and accurately. 
+    
         Context: {context}
-
+    
         Question: {data['question']}
         
         Instructions:
-        1. Only use information from the provided context
-        2. If the context doesn't contain relevant information, say so
-        3. Keep your answer focused and concise
-        4. Don't make up information
+        1. Use the information from the provided context to answer the question
+        2. If you can make a reasonable inference from the context, you may do so while indicating it's an inference
+        3. If the context is partially relevant, provide what information you can and explain what's missing
+        4. Only say "I don't have enough information" if the context is completely unrelated to the question
+        5. Keep your answer clear and well-structured
         
         Answer: """
         
@@ -329,3 +330,4 @@ def clear_chat_history():
 if __name__ == '__main__':
     initialize_weaviate_schema()
     app.run(host='0.0.0.0', port=5000, debug=True)
+    
