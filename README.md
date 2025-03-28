@@ -251,4 +251,4 @@ Required environment variables:
 
 # DEMO / PPT Presentation Link
 
-https://drive.google.com/drive/u/5/folders/19MqQXurvoQTNOTlyMhsTbI_VS1ApA5Zk
+https://drive.google.com/file/d/1txyxEWBsrqtKL6H17KuPq_c_25-mPj6M/view?usp=sharing
